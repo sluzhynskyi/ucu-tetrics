@@ -1,6 +1,5 @@
 var playground = createPlayground();
 
-console.log(playground);
 
 // will add object positions to the emply playground array
 function renderPositions() {
@@ -10,13 +9,12 @@ function renderPositions() {
         })
     });
 }
+
 function overlaps(cell) {
     for (let obj of objects) {
         if (obj.state === 'static') {
             for (let p1 of obj.position) {
-                console.log(`p1: ${p1}, cell: ${cell}`)
                 if (p1[0] === cell[0] && p1[1] === cell[1]) {
-                    console.log("TRUE")
                     return true;
                 }
             }
@@ -26,15 +24,35 @@ function overlaps(cell) {
 }
 
 function moveDown(currentObject) {
+    if (!currentObject) {
+        return;
+    }
     for (let position of currentObject.position) {
         if (position[0] <= 0 || overlaps([position[0] - 1, position[1]])) {
             currentObject.state = 'static';
-            break;
+            if (currentObj) {
+                let lines = new Set();
+                for (let pos of currentObj.position) {
+                    if(pos[0] !== undefined) lines.add(pos[0]);
+
+                }
+                lines.forEach(line => console.log(`!!!!!!!!the line is: ${playground[line]}`))
+                for (let l of lines) {
+                    if (!playground[l].some(element => element === undefined)) {
+                        console.log("cleaning");
+                        console.log(playground[l]);
+                        playground[l].fill(null);
+                        console.log("after cleaning");
+                        console.log(playground[l]);
+
+                    }
+                }
+                break;
+            }
         }
     }
     if (currentObject.state === 'falling') {
         currentObject.position.forEach(position => (position[0] -= 1));
-        console.log(objects)
     }
 
     playground = createPlayground();
@@ -76,28 +94,20 @@ function pauseGame() {
     clearInterval(gameInterval);
 }
 
-// function createObj() {}
-
-// Events
-// 1. move to bottom
-// 2. move right
-// 3. move left
-// 4. pause
-// 5. game over
-// 6. (re)render playground
-
 renderPlayground()
 
 // interval 1 second
+var currentObj;
 var gameInterval = setInterval(() => {
-    let currentObj;
+
+
     if (!getCurrentObject()) {
         currentObj = createRandomObj();
     } else {
         currentObj = getCurrentObject();
     }
-    moveDown(currentObj);
 
+    moveDown(currentObj);
 
     console.log(objects);
 }, 400);
