@@ -4,46 +4,76 @@ console.log(playground);
 
 // will add object positions to the emply playground array
 function renderPositions() {
-  objects.forEach( object => {
-    object.position.forEach( ([rowIndex, cellIndex]) => {
-      playground[rowIndex][cellIndex] = TYPE_COLORS[object.type]
-    })
-  });
+    objects.forEach(object => {
+        object.position.forEach(([rowIndex, cellIndex]) => {
+            playground[rowIndex][cellIndex] = TYPE_COLORS[object.type];
+        })
+    });
+}
+function overlaps(cell) {
+    for (let obj of objects) {
+        if (obj.state === 'static') {
+            for (let p1 of obj.position) {
+                console.log(`p1: ${p1}, cell: ${cell}`)
+                if (p1[0] === cell[0] && p1[1] === cell[1]) {
+                    console.log("TRUE")
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
-function moveDown(obj) {
-  console.log('moving down')
-  // 1. get current object - done
-  let currentObject = getCurrentObject();
+function moveDown(currentObject) {
+    for (let position of currentObject.position) {
+        if (position[0] <= 0 || overlaps([position[0] - 1, position[1]])) {
+            currentObject.state = 'static';
+            break;
+        }
+    }
+    if (currentObject.state === 'falling') {
+        currentObject.position.forEach(position => (position[0] -= 1));
+        console.log(objects)
+    }
 
-  // 2. re-define objects - done
-  console.log(objects)
-  currentObject.position.forEach(position => (position[0] > 0 && (position[0] -= 1)))
-  console.log(objects)
-  
-  // 3. re-define clear playground
-  playground = createPlayground();
+    playground = createPlayground();
+    renderPlayground()
 
-  // 4. re-renderPositions
-  // 5. re-renderPlayground
-  renderPlayground()
 }
 
 function moveRight(obj) {
-  console.log('moving right')
-  let currentObject = getCurrentObject();
-  console.log(currentObject);
+    console.log("right")
+    let currentObject = getCurrentObject();
+    if (currentObject.position.every(position => (position[1] < 7) && !overlaps([position[0], position[1] + 1]))) {
+        currentObject.position.forEach(position => position[1] += 1);
+    }
+    // 3. re-define clear playground
+    playground = createPlayground();
+
+    // 4. re-renderPositions
+    // 5. re-renderPlayground
+    renderPlayground()
+
 }
 
 function moveLeft(obj) {
-  console.log('moving left')
-  let currentObject = getCurrentObject();
-  console.log(currentObject);
+    console.log('moving left')
+    let currentObject = getCurrentObject();
+    if (currentObject.position.every(position => (position[1] > 0 && !overlaps([position[0], position[1] - 1])))) {
+        currentObject.position.forEach(position => position[1] -= 1);
+    }
+    // 3. re-define clear playground
+    playground = createPlayground();
+
+    // 4. re-renderPositions
+    // 5. re-renderPlayground
+    renderPlayground()
 }
 
 function pauseGame() {
-  console.log('pausing the game')
-  clearInterval(gameInterval);
+    console.log('pausing the game')
+    clearInterval(gameInterval);
 }
 
 // function createObj() {}
@@ -60,5 +90,14 @@ renderPlayground()
 
 // interval 1 second
 var gameInterval = setInterval(() => {
-  moveDown();
-}, 4000);
+    let currentObj;
+    if (!getCurrentObject()) {
+        currentObj = createRandomObj();
+    } else {
+        currentObj = getCurrentObject();
+    }
+    moveDown(currentObj);
+
+
+    console.log(objects);
+}, 400);
